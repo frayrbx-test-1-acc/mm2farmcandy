@@ -33,7 +33,7 @@ local visualFrame = Instance.new("Frame", gui)
 visualFrame.Size = UDim2.new(0, 220, 0, 300)
 visualFrame.Position = UDim2.new(0.5, -110, 0.3, 0)
 visualFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-visualFrame.BackgroundTransparency = 0.35 -- видимый стеклянный фон
+visualFrame.BackgroundTransparency = 0.35
 visualFrame.BorderSizePixel = 0
 visualFrame.ClipsDescendants = true
 Instance.new("UICorner", visualFrame).CornerRadius = UDim.new(0,12)
@@ -48,7 +48,7 @@ gradient.Rotation = 90
 local stroke = Instance.new("UIStroke", visualFrame)
 stroke.Color = Color3.fromRGB(255,162,0)
 stroke.Thickness = 2
-stroke.Transparency = 0.2 -- более видимая обводка
+stroke.Transparency = 0.2
 
 -- Интерактивный фрейм для кнопок
 local frame = Instance.new("Frame", gui)
@@ -58,6 +58,11 @@ frame.BackgroundTransparency = 1
 frame.Active = true
 frame.ClipsDescendants = true
 frame.Draggable = true
+
+-- Двигаем фон вместе с интерактивным фреймом
+frame:GetPropertyChangedSignal("Position"):Connect(function()
+    visualFrame.Position = frame.Position
+end)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, -20, 0, 35)
@@ -154,7 +159,6 @@ player.Idled:Connect(function()
 	end
 end)
 
--- Auto Farm
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
