@@ -1,11 +1,14 @@
+-- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 
+-- Player / character
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
+-- State
 local visitedPositions = {}
 local isActive = false
 local flySpeed = 15
@@ -14,12 +17,14 @@ local startTime = 0
 local antiAfkEnabled = false
 local autoResetEnabled = false
 
+-- Respawn handling
 player.CharacterAdded:Connect(function(char)
 	character = char
 	rootPart = char:WaitForChild("HumanoidRootPart")
 	visitedPositions = {}
 end)
 
+-- GUI (style & layout taken from first script)
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
@@ -53,6 +58,7 @@ separator.Position = UDim2.new(0, 6, 0, 35)
 separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180)
 separator.BorderSizePixel = 0
 
+-- Button animation helper (from first script)
 local function animateButton(btn)
 	btn.MouseEnter:Connect(function()
 		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 60, 180)}):Play()
@@ -68,6 +74,7 @@ local function animateButton(btn)
 	end)
 end
 
+-- UI constructors (from first script)
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(0, 160, 0, 24)
@@ -95,6 +102,7 @@ local function makeLabel(y, text)
 	return lbl
 end
 
+-- Buttons & labels (layout from first script; logic from second)
 local toggleBtn = makeButton(45, "Auto: OFF")
 local antiAfkBtn = makeButton(80, "AFK: OFF")
 local autoResetBtn = makeButton(115, "AutoReset: OFF")
@@ -104,13 +112,30 @@ local counterLabel = makeLabel(185, "Candies: 0")
 local timerLabel = makeLabel(200, "Time: 0s")
 local rateLabel = makeLabel(215, "Rate: 0/h")
 
+-- Fly helper (from second script; reused for tween movement)
+local function flyTo(pos, speed)
+	if not rootPart or not rootPart.Parent then return end
+	local distance = (pos - rootPart.Position).Magnitude
+	local duration = distance / speed
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+	local goal = {CFrame = CFrame.new(pos)}
+	local tween = TweenService:Create(rootPart, tweenInfo, goal)
+	tween:Play()
+	tween.Completed:Wait()
+end
+
+-- Button callbacks & state changes (integrated)
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto: ON" or "Auto: OFF"
+	toggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(60,150,60) or Color3.fromRGB(50,30,70)
+
 	if isActive then
 		collected = 0
 		startTime = tick()
 		visitedPositions = {}
+
+		-- UI updater
 		task.spawn(function()
 			while isActive do
 				local elapsed = tick() - startTime
@@ -120,27 +145,27 @@ toggleBtn.MouseButton1Click:Connect(function()
 				task.wait(0.1)
 			end
 		end)
+
+		-- Main autofarm loop (logic from second script)
 		task.spawn(function()
 			while isActive do
 				character = player.Character or player.CharacterAdded:Wait()
 				rootPart = character:FindFirstChild("HumanoidRootPart")
-				if rootPart then
+				if rootPart and rootPart.Parent then
 					local closest, shortest = nil, math.huge
 					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("BasePart") and obj.Name=="Coin_Server" then
+						if obj:IsA("BasePart") and obj.Name=="Coin_Server" and not visitedPositions[obj] then
 							local dist=(obj.Position-rootPart.Position).Magnitude
-							if dist<shortest and dist<250 and not visitedPositions[obj] then
+							if dist<shortest and dist<250 then
 								closest=obj
 								shortest=dist
 							end
 						end
 					end
 					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-						local distance=(closest.Position-rootPart.Position).Magnitude
-						local duration=distance/flySpeed
-						local tween=TweenService:Create(rootPart,TweenInfo.new(duration,Enum.EasingStyle.Linear),{CFrame=CFrame.new(closest.Position)})
-						tween:Play()
-						tween.Completed:Wait()
+						-- Use flyTo helper for tweens
+						flyTo(closest.Position, flySpeed)
+						-- after arriving, mark collected
 						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
 							visitedPositions[closest]=true
 							collected+=1
@@ -148,16 +173,29 @@ toggleBtn.MouseButton1Click:Connect(function()
 						end
 					end
 				end
+
+				-- Auto-reset logic (safe checks, from second script)
 				if autoResetEnabled then
-					local coinsText=player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
-						:WaitForChild("Game"):WaitForChild("CoinBags")
-						:WaitForChild("Container"):WaitForChild("Candy")
-						:WaitForChild("CurrencyFrame"):WaitForChild("Icon").Text
-					local coins=tonumber(coinsText)
-					if coins and coins>=40 then
-						if player.Character then player.Character:BreakJoints() end
+					local coinTextLabel
+					local mainGui = player:FindFirstChild("PlayerGui") and player.PlayerGui:FindFirstChild("MainGUI")
+					if mainGui then
+						local gameGui = mainGui:FindFirstChild("Game")
+						local coinBags = gameGui and gameGui:FindFirstChild("CoinBags")
+						local container = coinBags and coinBags:FindFirstChild("Container")
+						local candy = container and container:FindFirstChild("Candy")
+						local currencyFrame = candy and candy:FindFirstChild("CurrencyFrame")
+						local icon = currencyFrame and currencyFrame:FindFirstChild("Icon")
+						coinTextLabel = icon and icon:FindFirstChild("Coins")
+					end
+
+					if coinTextLabel then
+						local coins = tonumber(coinTextLabel.Text)
+						if coins and coins>=40 and character then
+							character:BreakJoints()
+						end
 					end
 				end
+
 				task.wait(0.1)
 			end
 		end)
@@ -180,6 +218,7 @@ autoResetBtn.MouseButton1Click:Connect(function()
 	autoResetBtn.Text = autoResetEnabled and "AutoReset: ON" or "AutoReset: OFF"
 end)
 
+-- Anti-AFK using VirtualUser (from both scripts)
 player.Idled:Connect(function()
 	if antiAfkEnabled then
 		task.spawn(function()
