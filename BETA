@@ -33,7 +33,6 @@ frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-
 local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(255, 162, 0)
 stroke.Thickness = 2
@@ -165,6 +164,21 @@ local function countCoins()
 	return n
 end
 
+local function getClosestCoin()
+	local closest = nil
+	local shortest = math.huge
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Name == "Coin_Server" and not visitedPositions[obj] then
+			local dist = (obj.Position - rootPart.Position).Magnitude
+			if dist < shortest and dist < 250 then
+				closest = obj
+				shortest = dist
+			end
+		end
+	end
+	return closest
+end
+
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
@@ -191,17 +205,8 @@ toggleBtn.MouseButton1Click:Connect(function()
 				character = player.Character or player.CharacterAdded:Wait()
 				rootPart = character:FindFirstChild("HumanoidRootPart")
 				if rootPart then
-					local closest, shortest = nil, math.huge
-					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
-							local dist = (obj.Position - rootPart.Position).Magnitude
-							if dist < shortest and dist < 250 and not visitedPositions[obj] then
-								closest = obj
-								shortest = dist
-							end
-						end
-					end
-					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
+					local closest = getClosestCoin()
+					if closest then
 						local before = countCoins()
 						flyTo(closest.Position, flySpeed)
 						local timeout = tick() + 5
