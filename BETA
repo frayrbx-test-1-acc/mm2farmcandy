@@ -28,32 +28,38 @@ local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 300)
-frame.Position = UDim2.new(0.5, -110, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(255,255,255)
-frame.BackgroundTransparency = 0.6
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.ClipsDescendants = true
-frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-
-local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(255, 162, 0)
-stroke.Thickness = 2
-stroke.Transparency = 0.4
-
-local gradient = Instance.new("UIGradient", frame)
+-- Визуальный фон (iOS стекло)
+local visualFrame = Instance.new("Frame", gui)
+visualFrame.Size = UDim2.new(0, 220, 0, 300)
+visualFrame.Position = UDim2.new(0.5, -110, 0.3, 0)
+visualFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+visualFrame.BackgroundTransparency = 0.6
+visualFrame.BorderSizePixel = 0
+visualFrame.ClipsDescendants = true
+Instance.new("UICorner", visualFrame).CornerRadius = UDim.new(0,12)
+local gradient = Instance.new("UIGradient", visualFrame)
 gradient.Color = ColorSequence.new{
 	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(240,240,255))
 }
 gradient.Rotation = 90
+local stroke = Instance.new("UIStroke", visualFrame)
+stroke.Color = Color3.fromRGB(255,162,0)
+stroke.Thickness = 2
+stroke.Transparency = 0.4
+
+-- Интерактивный фрейм для кнопок (прозрачный и кликабельный)
+local frame = Instance.new("Frame", gui)
+frame.Size = visualFrame.Size
+frame.Position = visualFrame.Position
+frame.BackgroundTransparency = 1
+frame.Active = true
+frame.ClipsDescendants = true
+frame.Draggable = true
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, -20, 0, 35)
-title.Position = UDim2.new(0, 10, 0, 5)
+title.Position = UDim2.new(0,10,0,5)
 title.Text = "🎃 Halloween Autofarm"
 title.TextColor3 = Color3.fromRGB(0,0,0)
 title.BackgroundTransparency = 1
@@ -69,8 +75,8 @@ separator.BorderSizePixel = 0
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 200, 0, 25)
-	btn.Position = UDim2.new(0.5, -100, 0, y)
+	btn.Size = UDim2.new(0,200,0,25)
+	btn.Position = UDim2.new(0.5,-100,0,y)
 	btn.Text = text
 	btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
 	btn.BackgroundTransparency = 0.6
@@ -80,7 +86,7 @@ local function makeButton(y, text)
 	btn.Active = true
 	btn.AutoButtonColor = true
 	btn.ZIndex = 10
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,5)
 	local btnStroke = Instance.new("UIStroke", btn)
 	btnStroke.Color = Color3.fromRGB(200,200,255)
 	btnStroke.Thickness = 1
@@ -90,8 +96,8 @@ end
 
 local function makeLabel(y, text, name)
 	local lbl = Instance.new("TextLabel", frame)
-	lbl.Size = UDim2.new(0, 200, 0, 18)
-	lbl.Position = UDim2.new(0.5, -100, 0, y)
+	lbl.Size = UDim2.new(0,200,0,18)
+	lbl.Position = UDim2.new(0.5,-100,0,y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
 	lbl.TextColor3 = Color3.fromRGB(50,50,50)
@@ -102,51 +108,47 @@ local function makeLabel(y, text, name)
 	return lbl
 end
 
-local toggleBtn = makeButton(60, "Auto Farm: OFF")
-local antiAfkBtn = makeButton(95, "Anti-AFK: OFF")
-local speedBtn = makeButton(130, "Tween Speed: 15")
-local autoResetBtn = makeButton(165, "Auto Reset: OFF")
-local counterLabel = makeLabel(200, "Candies Collected: 0", "CounterLabel")
-local timerLabel = makeLabel(220, "Time Active: 0s", "TimerLabel")
-local rateLabel = makeLabel(240, "Est. Candies/Hour: 0", "RateLabel")
-local resetBtn = makeButton(265, "Reset Counter")
+local toggleBtn = makeButton(60,"Auto Farm: OFF")
+local antiAfkBtn = makeButton(95,"Anti-AFK: OFF")
+local speedBtn = makeButton(130,"Tween Speed: 15")
+local autoResetBtn = makeButton(165,"Auto Reset: OFF")
+local counterLabel = makeLabel(200,"Candies Collected: 0","CounterLabel")
+local timerLabel = makeLabel(220,"Time Active: 0s","TimerLabel")
+local rateLabel = makeLabel(240,"Est. Candies/Hour: 0","RateLabel")
+local resetBtn = makeButton(265,"Reset Counter")
 
--- Reset
+-- Функции кнопок
 resetBtn.MouseButton1Click:Connect(function()
-	collected = 0
-	startTime = tick()
-	counterLabel.Text = "Candies Collected: 0"
-	timerLabel.Text = "Time Active: 0s"
-	rateLabel.Text = "Est. Candies/Hour: 0"
+	collected=0
+	startTime=tick()
+	counterLabel.Text="Candies Collected: 0"
+	timerLabel.Text="Time Active: 0s"
+	rateLabel.Text="Est. Candies/Hour: 0"
 end)
 
--- Anti-AFK
 antiAfkBtn.MouseButton1Click:Connect(function()
-	antiAfkEnabled = not antiAfkEnabled
+	antiAfkEnabled=not antiAfkEnabled
 	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
 	antiAfkBtn.BackgroundColor3 = antiAfkEnabled and Color3.fromRGB(80,160,80) or Color3.fromRGB(255,255,255)
 end)
 
--- Auto Reset
 autoResetBtn.MouseButton1Click:Connect(function()
 	autoResetEnabled = not autoResetEnabled
 	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
 	autoResetBtn.BackgroundColor3 = autoResetEnabled and Color3.fromRGB(80,160,80) or Color3.fromRGB(255,255,255)
 end)
 
--- Tween Speed
 speedBtn.MouseButton1Click:Connect(function()
 	flySpeed += 1
-	if flySpeed > 25 then flySpeed = 10 end
-	speedBtn.Text = "Tween Speed: "..flySpeed
+	if flySpeed>25 then flySpeed=10 end
+	speedBtn.Text="Tween Speed: "..flySpeed
 end)
 
--- Anti-AFK idle
 player.Idled:Connect(function()
 	if antiAfkEnabled then
-		VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+		VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 		task.wait(1)
-		VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+		VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 	end
 end)
 
@@ -157,16 +159,16 @@ toggleBtn.MouseButton1Click:Connect(function()
 	toggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(80,160,80) or Color3.fromRGB(255,255,255)
 
 	if isActive then
-		collected = 0
-		startTime = tick()
-		visitedPositions = {}
+		collected=0
+		startTime=tick()
+		visitedPositions={}
 
 		task.spawn(function()
 			while isActive do
 				local elapsed = tick()-startTime
-				timerLabel.Text = "Time Active: "..math.floor(elapsed).."s"
+				timerLabel.Text="Time Active: "..math.floor(elapsed).."s"
 				local rate = elapsed>0 and math.floor((collected/elapsed)*3600) or 0
-				rateLabel.Text = "Est. Candies/Hour: "..rate
+				rateLabel.Text="Est. Candies/Hour: "..rate
 				task.wait(0.1)
 			end
 		end)
@@ -176,8 +178,8 @@ toggleBtn.MouseButton1Click:Connect(function()
 				character = player.Character or player.CharacterAdded:Wait()
 				rootPart = character:FindFirstChild("HumanoidRootPart")
 				if rootPart then
-					local closest, shortest = nil, math.huge
-					for _, obj in ipairs(workspace:GetDescendants()) do
+					local closest,shortest = nil,math.huge
+					for _,obj in ipairs(workspace:GetDescendants()) do
 						if obj:IsA("BasePart") and obj.Name=="Coin_Server" then
 							local dist=(obj.Position-rootPart.Position).Magnitude
 							if dist<shortest and dist<250 and not visitedPositions[obj] then
@@ -187,8 +189,8 @@ toggleBtn.MouseButton1Click:Connect(function()
 						end
 					end
 					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-						local distance = (closest.Position-rootPart.Position).Magnitude
-						local duration = distance/flySpeed
+						local distance=(closest.Position-rootPart.Position).Magnitude
+						local duration=distance/flySpeed
 						TweenService:Create(rootPart,TweenInfo.new(duration,Enum.EasingStyle.Linear),{CFrame=CFrame.new(closest.Position)}):Play()
 						visitedPositions[closest]=true
 						collected+=1
@@ -196,12 +198,12 @@ toggleBtn.MouseButton1Click:Connect(function()
 						if autoResetEnabled and collected>=40 then
 							task.wait(1)
 							player.Character:BreakJoints()
-							collected = 0
-							counterLabel.Text = "Candies Collected: 0"
-							timerLabel.Text = "Time Active: 0s"
-							rateLabel.Text = "Est. Candies/Hour: 0"
-							startTime = tick()
-							visitedPositions = {}
+							collected=0
+							counterLabel.Text="Candies Collected: 0"
+							timerLabel.Text="Time Active: 0s"
+							rateLabel.Text="Est. Candies/Hour: 0"
+							startTime=tick()
+							visitedPositions={}
 							task.wait(5)
 						end
 					end
