@@ -4,7 +4,6 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 
--- Player
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
@@ -15,10 +14,10 @@ local isActive = false
 local flySpeed = 15
 local collected = 0
 local startTime = 0
-local antiAfkEnabled = false 
+local antiAfkEnabled = false
 local autoResetEnabled = false
 
--- Character respawn handling
+-- Character respawn
 player.CharacterAdded:Connect(function(char)
 	character = char
 	rootPart = char:WaitForChild("HumanoidRootPart")
@@ -31,72 +30,89 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 280, 0, 360)
-frame.Position = UDim2.new(0.5, -140, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+frame.Size = UDim2.new(0, 187, 0, 240) -- уменьшенный размер
+frame.Position = UDim2.new(0.5, -93, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
 local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(255, 162, 0)
+stroke.Color = Color3.fromRGB(255, 140, 0) -- ярко-оранжевый
 stroke.Thickness = 2
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -20, 0, 40)
+title.Size = UDim2.new(1, -20, 0, 30)
 title.Position = UDim2.new(0, 10, 0, 5)
 title.Text = "🎃 Halloween Autofarm"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextColor3 = Color3.fromRGB(255, 165, 0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.TextSize = 20
+title.TextSize = 16
 title.TextXAlignment = Enum.TextXAlignment.Left
 
 local separator = Instance.new("Frame", frame)
 separator.Size = UDim2.new(1, -20, 0, 1)
-separator.Position = UDim2.new(0, 10, 0, 45)
-separator.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
+separator.Position = UDim2.new(0, 10, 0, 35)
+separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180) -- фиолетовый
 separator.BorderSizePixel = 0
 
 -- Helper functions
+local function animateButton(btn)
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 60, 180)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 30, 70)}):Play()
+	end)
+	btn.MouseButton1Click:Connect(function()
+		local size = btn.Size
+		TweenService:Create(btn, TweenInfo.new(0.1), {Size = size - UDim2.new(0,4,0,4)}):Play()
+		task.wait(0.1)
+		TweenService:Create(btn, TweenInfo.new(0.1), {Size = size}):Play()
+	end)
+end
+
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 240, 0, 30)
-	btn.Position = UDim2.new(0.5, -120, 0, y)
+	btn.Size = UDim2.new(0, 160, 0, 25)
+	btn.Position = UDim2.new(0.5, -80, 0, y)
 	btn.Text = text
-	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70) -- фиолетовый темный
+	btn.TextColor3 = Color3.fromRGB(255, 165, 0) -- оранжевый текст
 	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
+	btn.TextSize = 12
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	animateButton(btn)
 	return btn
 end
 
 local function makeLabel(y, text)
 	local lbl = Instance.new("TextLabel", frame)
-	lbl.Size = UDim2.new(0, 240, 0, 20)
-	lbl.Position = UDim2.new(0.5, -120, 0, y)
+	lbl.Size = UDim2.new(0, 160, 0, 18)
+	lbl.Position = UDim2.new(0.5, -80, 0, y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
-	lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
+	lbl.TextColor3 = Color3.fromRGB(255, 140, 0) -- ярко-оранжевый
 	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 14
+	lbl.TextSize = 12
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	return lbl
 end
 
 -- Buttons and labels
-local toggleBtn = makeButton(60, "Auto Farm: OFF")
-local antiAfkBtn = makeButton(100, "Anti-AFK: OFF")
-local speedBtn = makeButton(140, "Tween Speed: 15")
-local resetBtn = makeButton(260, "Reset Counter")
-local autoResetBtn = makeButton(300, "Auto Reset: OFF")
+local toggleBtn = makeButton(50, "Auto Farm: OFF")
+local antiAfkBtn = makeButton(85, "Anti-AFK: OFF")
+local speedBtn = makeButton(120, "Speed: 15")
+local resetBtn = makeButton(190, "Reset Counter")
+local autoResetBtn = makeButton(225, "Auto Reset: OFF")
 
-local counterLabel = makeLabel(180, "Candies Collected: 0")
-local timerLabel = makeLabel(205, "Time Active: 0s")
-local rateLabel = makeLabel(230, "Est. Candies/Hour: 0")
+local counterLabel = makeLabel(150, "Candies Collected: 0")
+local timerLabel = makeLabel(165, "Time Active: 0s")
+local rateLabel = makeLabel(180, "Est. Candies/Hour: 0")
 
--- Buttons functionality
+-- Button functionality
 resetBtn.MouseButton1Click:Connect(function()
 	collected = 0
 	startTime = tick()
@@ -108,27 +124,26 @@ end)
 antiAfkBtn.MouseButton1Click:Connect(function()
 	antiAfkEnabled = not antiAfkEnabled
 	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
-	antiAfkBtn.BackgroundColor3 = antiAfkEnabled and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(50, 50, 70)
 end)
 
 autoResetBtn.MouseButton1Click:Connect(function()
 	autoResetEnabled = not autoResetEnabled
 	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
-	autoResetBtn.BackgroundColor3 = autoResetEnabled and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(50, 50, 70)
 end)
 
+speedBtn.MouseButton1Click:Connect(function()
+	flySpeed += 1
+	if flySpeed > 25 then flySpeed = 10 end
+	speedBtn.Text = "Speed: " .. flySpeed
+end)
+
+-- Anti-AFK
 player.Idled:Connect(function()
 	if antiAfkEnabled then
 		VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 		task.wait(1)
 		VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 	end
-end)
-
-speedBtn.MouseButton1Click:Connect(function()
-	flySpeed += 1
-	if flySpeed > 25 then flySpeed = 10 end
-	speedBtn.Text = "Tween Speed: " .. flySpeed
 end)
 
 -- Fly function
@@ -147,7 +162,6 @@ end
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
-	toggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(50, 50, 70)
 
 	if isActive then
 		collected = 0
@@ -189,14 +203,14 @@ toggleBtn.MouseButton1Click:Connect(function()
 					end
 				end
 
-				-- ==== Авто-ресет прямо здесь ====
-				local coinTextLabel = player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
-					:WaitForChild("Game"):WaitForChild("CoinBags")
-					:WaitForChild("Container"):WaitForChild("Candy")
-					:WaitForChild("CurrencyFrame"):WaitForChild("Icon")
-					:WaitForChild("Coins")
+				-- Auto-reset
 				if autoResetEnabled then
-					local coins = tonumber(coinTextLabel.Text)
+					local coinsText = player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
+						:WaitForChild("Game"):WaitForChild("CoinBags")
+						:WaitForChild("Container"):WaitForChild("Candy")
+						:WaitForChild("CurrencyFrame"):WaitForChild("Icon")
+						:WaitForChild("Coins").Text
+					local coins = tonumber(coinsText)
 					if coins and coins >= 40 then
 						if player.Character then
 							player.Character:BreakJoints()
