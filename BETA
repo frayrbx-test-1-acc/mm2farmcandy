@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
-
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
@@ -22,44 +21,59 @@ player.CharacterAdded:Connect(function(char)
 end)
 
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "iOSAutoFarmGui"
+gui.Name = "iOS26AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 320, 0, 400)
-frame.Position = UDim2.new(0.5, -160, 0.25, 0)
-frame.BackgroundTransparency = 0.7
+frame.Size = UDim2.new(0, 300, 0, 420)
+frame.Position = UDim2.new(0.5, -150, 0.25, 0)
 frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BackgroundTransparency = 0.7
 frame.ClipsDescendants = true
 frame.Active = true
 frame.Draggable = true
+
 local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(0, 30)
-local gradient = Instance.new("UIGradient", frame)
-gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(245,245,245))}
-gradient.Rotation = 90
+
 local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(200,200,200)
+stroke.Color = Color3.fromRGB(200, 200, 200)
 stroke.Transparency = 0.5
-stroke.Thickness = 1.5
+stroke.Thickness = 1.8
+
+local gradient = Instance.new("UIGradient", frame)
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(245,245,245))
+}
+gradient.Rotation = 90
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -20, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 10)
+title.Text = "🎃 Halloween Autofarm"
+title.TextColor3 = Color3.fromRGB(0,0,0)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextXAlignment = Enum.TextXAlignment.Left
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 260, 0, 40)
+	btn.Size = UDim2.new(0, 260, 0, 45)
 	btn.Position = UDim2.new(0.5, -130, 0, y)
-	btn.BackgroundTransparency = 0.7
 	btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	btn.BackgroundTransparency = 0.7
 	btn.Text = text
 	btn.TextColor3 = Color3.fromRGB(0,0,0)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 16
-	btn.AutoButtonColor = true
 	local btnCorner = Instance.new("UICorner", btn)
-	btnCorner.CornerRadius = UDim.new(0, 20)
+	btnCorner.CornerRadius = UDim.new(0, 22)
 	local btnStroke = Instance.new("UIStroke", btn)
 	btnStroke.Color = Color3.fromRGB(180,180,180)
 	btnStroke.Transparency = 0.5
-	btnStroke.Thickness = 1
+	btnStroke.Thickness = 1.2
 	return btn
 end
 
@@ -76,14 +90,14 @@ local function makeLabel(y, text)
 	return lbl
 end
 
-local autoFarmBtn = makeButton(50, "Auto Farm: OFF")
-local antiAfkBtn = makeButton(110, "Anti-AFK: OFF")
-local speedBtn = makeButton(170, "Tween Speed: 15")
-local resetBtn = makeButton(230, "Reset Counter")
-local autoResetBtn = makeButton(290, "Auto Reset: OFF")
-local counterLabel = makeLabel(150, "Candies Collected: 0")
-local timerLabel = makeLabel(175, "Time Active: 0s")
-local rateLabel = makeLabel(200, "Est. Candies/Hour: 0")
+local autoFarmBtn = makeButton(70, "Auto Farm: OFF")
+local antiAfkBtn = makeButton(130, "Anti-AFK: OFF")
+local speedBtn = makeButton(190, "Tween Speed: 15")
+local resetBtn = makeButton(250, "Reset Counter")
+local autoResetBtn = makeButton(310, "Auto Reset: OFF")
+local counterLabel = makeLabel(160, "Candies Collected: 0")
+local timerLabel = makeLabel(185, "Time Active: 0s")
+local rateLabel = makeLabel(210, "Est. Candies/Hour: 0")
 
 resetBtn.MouseButton1Click:Connect(function()
 	collected = 0
@@ -108,7 +122,7 @@ end)
 speedBtn.MouseButton1Click:Connect(function()
 	flySpeed += 1
 	if flySpeed > 25 then flySpeed = 10 end
-	speedBtn.Text = "Tween Speed: " .. flySpeed
+	speedBtn.Text = "Tween Speed: "..flySpeed
 end)
 
 player.Idled:Connect(function()
@@ -121,11 +135,9 @@ end)
 
 local function flyTo(pos, speed)
 	if not rootPart then return end
-	local distance = (pos - rootPart.Position).Magnitude
-	local duration = distance / speed
-	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-	local goal = {CFrame = CFrame.new(pos)}
-	local tween = TweenService:Create(rootPart, tweenInfo, goal)
+	local distance = (pos-rootPart.Position).Magnitude
+	local duration = distance/speed
+	local tween = TweenService:Create(rootPart,TweenInfo.new(duration,Enum.EasingStyle.Linear),{CFrame=CFrame.new(pos)})
 	tween:Play()
 	tween.Completed:Wait()
 end
