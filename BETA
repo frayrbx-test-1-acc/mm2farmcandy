@@ -2,9 +2,12 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
+
 local player = Players.LocalPlayer
+if not player then warn("No LocalPlayer found") return end
+
 local character = player.Character or player.CharacterAdded:Wait()
-local rootPart = character:WaitForChild("HumanoidRootPart")
+local rootPart = character:FindFirstChild("HumanoidRootPart")
 
 local visitedPositions = {}
 local isActive = false
@@ -17,17 +20,22 @@ local autoResetEnabled = false
 
 player.CharacterAdded:Connect(function(char)
 	character = char
-	rootPart = char:WaitForChild("HumanoidRootPart")
+	rootPart = character:WaitForChild("HumanoidRootPart")
 	visitedPositions = {}
 	collectedSession = 0
-	if player:FindFirstChild("PlayerGui"):FindFirstChild("AutoFarmGui") then
-		player.PlayerGui.AutoFarmGui.Frame.CounterLabel.Text = "Candies Collected: 0"
+	if player:FindFirstChild("PlayerGui") and player.PlayerGui:FindFirstChild("AutoFarmGui") then
+		local gui = player.PlayerGui.AutoFarmGui
+		if gui:FindFirstChild("Frame") and gui.Frame:FindFirstChild("CounterLabel") then
+			gui.Frame.CounterLabel.Text = "Candies Collected: 0"
+		end
 	end
+	warn("CharacterAdded: session counter reset to 0")
 end)
 
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
 gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 220, 0, 300)
@@ -36,8 +44,8 @@ frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-
+local uic = Instance.new("UICorner", frame)
+uic.CornerRadius = UDim.new(0, 12)
 local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(255, 162, 0)
 stroke.Thickness = 2
@@ -98,9 +106,10 @@ resetBtn.MouseButton1Click:Connect(function()
 	collectedSession = 0
 	collectedTotal = 0
 	startTime = tick()
-	counterLabel.Text = "Candies Collected: 0"
-	timerLabel.Text = "Time Active: 0s"
-	rateLabel.Text = "Est. Candies/Hour: 0"
+	if counterLabel then counterLabel.Text = "Candies Collected: 0" end
+	if timerLabel then timerLabel.Text = "Time Active: 0s" end
+	if rateLabel then rateLabel.Text = "Est. Candies/Hour: 0" end
+	warn("Manual reset pressed: both counters set to 0")
 end)
 
 antiAfkBtn.MouseButton1Click:Connect(function()
@@ -119,9 +128,11 @@ autoResetBtn.MouseButton1Click:Connect(function()
 	if autoResetEnabled then
 		autoResetBtn.Text = "Auto Reset: ON"
 		autoResetBtn.BackgroundColor3 = Color3.fromRGB(80, 160, 80)
+		warn("AutoReset enabled")
 	else
 		autoResetBtn.Text = "Auto Reset: OFF"
 		autoResetBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+		warn("AutoReset disabled")
 	end
 end)
 
@@ -152,12 +163,17 @@ end)
 local function flyTo(pos, speed)
 	if not rootPart then return end
 	local distance = (pos - rootPart.Position).Magnitude
-	local duration = distance / speed
+	local duration = math.max(0.05, distance / speed)
 	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
 	local goal = {CFrame = CFrame.new(pos)}
-	local tween = TweenService:Create(rootPart, tweenInfo, goal)
-	tween:Play()
-	tween.Completed:Wait()
+	local ok, err = pcall(function()
+		local tween = TweenService:Create(rootPart, tweenInfo, goal)
+		tween:Play()
+		tween.Completed:Wait()
+	end)
+	if not ok then
+		warn("Tween failed:", err)
+	end
 end
 
 toggleBtn.MouseButton1Click:Connect(function()
@@ -174,9 +190,9 @@ toggleBtn.MouseButton1Click:Connect(function()
 		task.spawn(function()
 			while isActive do
 				local elapsed = tick() - startTime
-				timerLabel.Text = "Time Active: " .. math.floor(elapsed) .. "s"
+				if timerLabel then timerLabel.Text = "Time Active: " .. math.floor(elapsed) .. "s" end
 				local rate = elapsed > 0 and math.floor((collectedSession / elapsed) * 3600) or 0
-				rateLabel.Text = "Est. Candies/Hour: " .. rate
+				if rateLabel then rateLabel.Text = "Est. Candies/Hour: " .. rate end
 				task.wait(0.1)
 			end
 		end)
@@ -185,39 +201,50 @@ toggleBtn.MouseButton1Click:Connect(function()
 			while isActive do
 				character = player.Character or player.CharacterAdded:Wait()
 				rootPart = character:FindFirstChild("HumanoidRootPart")
-				if rootPart then
-					local closest, shortest = nil, math.huge
-					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
-							local dist = (obj.Position - rootPart.Position).Magnitude
-							if dist < shortest and dist < 250 and not visitedPositions[obj] then
-								closest = obj
-								shortest = dist
-							end
-						end
-					end
-					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-						flyTo(closest.Position, flySpeed)
-						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-							visitedPositions[closest] = true
-							collectedSession += 1
-							collectedTotal += 1
-							counterLabel.Text = "Candies Collected: " .. collectedSession
-							if autoResetEnabled and collectedTotal >= 40 then
-								task.wait(1)
-								player.Character:BreakJoints()
-								collectedSession = 0
-								collectedTotal = 0
-								counterLabel.Text = "Candies Collected: 0"
-								timerLabel.Text = "Time Active: 0s"
-								rateLabel.Text = "Est. Candies/Hour: 0"
-								startTime = tick()
-								visitedPositions = {}
-								task.wait(5)
-							end
+				if not rootPart then
+					task.wait(0.5)
+					continue
+				end
+
+				local closest, shortest = nil, math.huge
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
+						local ok, pos = pcall(function() return obj.Position end)
+						if not ok then continue end
+						local dist = (pos - rootPart.Position).Magnitude
+						if dist < shortest and dist < 250 and not visitedPositions[obj] then
+							closest = obj
+							shortest = dist
 						end
 					end
 				end
+
+				if closest and closest.Parent and closest:IsDescendantOf(workspace) then
+					flyTo(closest.Position, flySpeed)
+					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
+						visitedPositions[closest] = true
+						collectedSession += 1
+						collectedTotal += 1
+						if counterLabel then counterLabel.Text = "Candies Collected: " .. collectedSession end
+
+						if autoResetEnabled and collectedTotal >= 40 then
+							task.wait(1)
+							warn("AutoReset triggered at collectedTotal =", collectedTotal)
+							if player.Character then
+								player.Character:BreakJoints()
+							end
+							collectedSession = 0
+							collectedTotal = 0
+							if counterLabel then counterLabel.Text = "Candies Collected: 0" end
+							if timerLabel then timerLabel.Text = "Time Active: 0s" end
+							if rateLabel then rateLabel.Text = "Est. Candies/Hour: 0" end
+							startTime = tick()
+							visitedPositions = {}
+							task.wait(5)
+						end
+					end
+				end
+
 				task.wait(0.1)
 			end
 		end)
