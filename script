@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -25,8 +24,8 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 200, 0, 240)
-frame.Position = UDim2.new(0.5, -96, 0.3, 0)
+frame.Size = UDim2.new(0, 240, 0, 280)
+frame.Position = UDim2.new(0.5, -120, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -55,28 +54,22 @@ separator.BorderSizePixel = 0
 
 local function animateButton(btn)
 	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 60, 180)}):Play()
+		btn.BackgroundColor3 = Color3.fromRGB(120, 60, 180)
 	end)
 	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 30, 70)}):Play()
-	end)
-	btn.MouseButton1Click:Connect(function()
-		local size = btn.Size
-		TweenService:Create(btn, TweenInfo.new(0.1), {Size = size - UDim2.new(0,4,0,4)}):Play()
-		task.wait(0.1)
-		TweenService:Create(btn, TweenInfo.new(0.1), {Size = size}):Play()
+		btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
 	end)
 end
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 160, 0, 24)
-	btn.Position = UDim2.new(0.5, -80, 0, y)
+	btn.Size = UDim2.new(0, 180, 0, 28)
+	btn.Position = UDim2.new(0.5, -90, 0, y)
 	btn.Text = text
 	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
 	btn.TextColor3 = Color3.fromRGB(255, 165, 0)
 	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 12
+	btn.TextSize = 14
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 	animateButton(btn)
 	return btn
@@ -84,25 +77,49 @@ end
 
 local function makeLabel(y, text)
 	local lbl = Instance.new("TextLabel", frame)
-	lbl.Size = UDim2.new(0, 160, 0, 18)
-	lbl.Position = UDim2.new(0.5, -80, 0, y)
+	lbl.Size = UDim2.new(0, 180, 0, 20)
+	lbl.Position = UDim2.new(0.5, -90, 0, y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
 	lbl.TextColor3 = Color3.fromRGB(255, 140, 0)
 	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 12
+	lbl.TextSize = 14
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	return lbl
 end
 
 local toggleBtn = makeButton(45, "Auto: OFF")
-local antiAfkBtn = makeButton(80, "AFK: OFF")
-local autoResetBtn = makeButton(115, "AutoReset: OFF")
-local speedBtn = makeButton(150, "Speed: 15")
+local antiAfkBtn = makeButton(85, "AFK: OFF")
+local autoResetBtn = makeButton(125, "AutoReset: OFF")
+local speedBtn = makeButton(165, "Speed: 15")
 
-local counterLabel = makeLabel(185, "Candies: 0")
-local timerLabel = makeLabel(200, "Time: 0s")
-local rateLabel = makeLabel(215, "Rate: 0/h")
+local counterLabel = makeLabel(205, "Candies: 0")
+local timerLabel = makeLabel(225, "Time: 0s")
+local rateLabel = makeLabel(245, "Rate: 0/h")
+
+local function getClosestCoin()
+	local closest, shortest = nil, math.huge
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
+			local dist = (obj.Position - rootPart.Position).Magnitude
+			if dist < shortest and dist < 250 and not visitedPositions[obj] then
+				closest = obj
+				shortest = dist
+			end
+		end
+	end
+	return closest
+end
+
+local function moveTowards(targetPos, delta)
+	if not rootPart then return end
+	local direction = (targetPos - rootPart.Position)
+	if direction.Magnitude < delta then
+		rootPart.CFrame = CFrame.new(targetPos)
+	else
+		rootPart.CFrame = CFrame.new(rootPart.Position + direction.Unit * delta)
+	end
+end
 
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
@@ -122,43 +139,20 @@ toggleBtn.MouseButton1Click:Connect(function()
 		end)
 		task.spawn(function()
 			while isActive do
-				character = player.Character or player.CharacterAdded:Wait()
-				rootPart = character:FindFirstChild("HumanoidRootPart")
-				if rootPart then
-					local closest, shortest = nil, math.huge
-					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("BasePart") and obj.Name=="Coin_Server" then
-							local dist=(obj.Position-rootPart.Position).Magnitude
-							if dist<shortest and dist<250 and not visitedPositions[obj] then
-								closest=obj
-								shortest=dist
-							end
-						end
-					end
-					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-						local distance=(closest.Position-rootPart.Position).Magnitude
-						local duration=distance/flySpeed
-						local tween=TweenService:Create(rootPart,TweenInfo.new(duration,Enum.EasingStyle.Linear),{CFrame=CFrame.new(closest.Position)})
-						tween:Play()
-						tween.Completed:Wait()
-						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-							visitedPositions[closest]=true
-							collected+=1
-							counterLabel.Text="Candies: "..collected
-						end
+				if not rootPart or not rootPart.Parent then
+					task.wait(0.5)
+					rootPart = character:FindFirstChild("HumanoidRootPart")
+				end
+				local coin = getClosestCoin()
+				if coin and coin.Parent then
+					moveTowards(coin.Position, flySpeed * 0.5)
+					if (rootPart.Position - coin.Position).Magnitude < 3 then
+						visitedPositions[coin] = true
+						collected += 1
+						counterLabel.Text = "Candies: "..collected
 					end
 				end
-				if autoResetEnabled then
-					local coinsText=player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
-						:WaitForChild("Game"):WaitForChild("CoinBags")
-						:WaitForChild("Container"):WaitForChild("Candy")
-						:WaitForChild("CurrencyFrame"):WaitForChild("Icon").Text
-					local coins=tonumber(coinsText)
-					if coins and coins>=40 then
-						if player.Character then player.Character:BreakJoints() end
-					end
-				end
-				task.wait(0.1)
+				task.wait(0.05)
 			end
 		end)
 	end
@@ -170,9 +164,9 @@ antiAfkBtn.MouseButton1Click:Connect(function()
 end)
 
 speedBtn.MouseButton1Click:Connect(function()
-	flySpeed+=1
-	if flySpeed>25 then flySpeed=10 end
-	speedBtn.Text="Speed: "..flySpeed
+	flySpeed += 1
+	if flySpeed > 25 then flySpeed = 10 end
+	speedBtn.Text = "Speed: "..flySpeed
 end)
 
 autoResetBtn.MouseButton1Click:Connect(function()
@@ -180,12 +174,32 @@ autoResetBtn.MouseButton1Click:Connect(function()
 	autoResetBtn.Text = autoResetEnabled and "AutoReset: ON" or "AutoReset: OFF"
 end)
 
-player.Idled:Connect(function()
-	if antiAfkEnabled then
-		task.spawn(function()
-			VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-			task.wait(0.1)
-			VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-		end)
+task.spawn(function()
+	while true do
+		if antiAfkEnabled and rootPart then
+			rootPart.CFrame = rootPart.CFrame + Vector3.new(0,0,0.01)
+		end
+		task.wait(30)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if autoResetEnabled and player.Character then
+			local coinLabel = player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
+				:WaitForChild("Game"):WaitForChild("CoinBags")
+				:WaitForChild("Container"):WaitForChild("Candy")
+				:WaitForChild("CurrencyFrame"):WaitForChild("Icon")
+			local coins = tonumber(coinLabel.Text)
+			if coins and coins >= 40 then
+				local char = player.Character
+				task.spawn(function()
+					if char then
+						char:BreakJoints()
+					end
+				end)
+			end
+		end
+		task.wait(1)
 	end
 end)
