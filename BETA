@@ -35,7 +35,9 @@ frame.BackgroundColor3 = Color3.fromRGB(255,255,255)
 frame.BackgroundTransparency = 0.6
 frame.BorderSizePixel = 0
 frame.Active = true
+frame.ClipsDescendants = true
 frame.Draggable = true
+
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
 local stroke = Instance.new("UIStroke", frame)
@@ -76,15 +78,18 @@ local function makeButton(y, text)
 	btn.TextColor3 = Color3.fromRGB(0,0,0)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 14
+	btn.Active = true
+	btn.AutoButtonColor = true
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 	local btnStroke = Instance.new("UIStroke", btn)
 	btnStroke.Color = Color3.fromRGB(200,200,255)
 	btnStroke.Thickness = 1
 	btnStroke.Transparency = 0.4
+	btn.ZIndex = 2
 	return btn
 end
 
-local function makeLabel(y, text)
+local function makeLabel(y, text, name)
 	local lbl = Instance.new("TextLabel", frame)
 	lbl.Size = UDim2.new(0, 200, 0, 18)
 	lbl.Position = UDim2.new(0.5, -100, 0, y)
@@ -94,7 +99,7 @@ local function makeLabel(y, text)
 	lbl.Font = Enum.Font.Gotham
 	lbl.TextSize = 13
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
-	lbl.Name = "CounterLabel"
+	lbl.Name = name
 	return lbl
 end
 
@@ -102,7 +107,42 @@ local toggleBtn = makeButton(60, "Auto Farm: OFF")
 local antiAfkBtn = makeButton(95, "Anti-AFK: OFF")
 local speedBtn = makeButton(130, "Tween Speed: 15")
 local autoResetBtn = makeButton(165, "Auto Reset: OFF")
-local counterLabel = makeLabel(200, "Candies Collected: 0")
-local timerLabel = makeLabel(220, "Time Active: 0s")
-local rateLabel = makeLabel(240, "Est. Candies/Hour: 0")
+local counterLabel = makeLabel(200, "Candies Collected: 0", "CounterLabel")
+local timerLabel = makeLabel(220, "Time Active: 0s", "TimerLabel")
+local rateLabel = makeLabel(240, "Est. Candies/Hour: 0", "RateLabel")
 local resetBtn = makeButton(265, "Reset Counter")
+
+-- Кнопки функционал
+resetBtn.MouseButton1Click:Connect(function()
+	collected = 0
+	startTime = tick()
+	counterLabel.Text = "Candies Collected: 0"
+	timerLabel.Text = "Time Active: 0s"
+	rateLabel.Text = "Est. Candies/Hour: 0"
+end)
+
+antiAfkBtn.MouseButton1Click:Connect(function()
+	antiAfkEnabled = not antiAfkEnabled
+	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
+	antiAfkBtn.BackgroundColor3 = antiAfkEnabled and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(255,255,255)
+end)
+
+autoResetBtn.MouseButton1Click:Connect(function()
+	autoResetEnabled = not autoResetEnabled
+	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
+	autoResetBtn.BackgroundColor3 = autoResetEnabled and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(255,255,255)
+end)
+
+speedBtn.MouseButton1Click:Connect(function()
+	flySpeed += 1
+	if flySpeed > 25 then flySpeed = 10 end
+	speedBtn.Text = "Tween Speed: " .. flySpeed
+end)
+
+player.Idled:Connect(function()
+	if antiAfkEnabled then
+		VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+		task.wait(1)
+		VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+	end
+end)
