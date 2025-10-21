@@ -1,7 +1,6 @@
 -- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
@@ -30,20 +29,20 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 187, 0, 240) -- уменьшенный размер
-frame.Position = UDim2.new(0.5, -93, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+frame.Size = UDim2.new(0, 180, 0, 220)
+frame.Position = UDim2.new(0.5, -90, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
 local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(255, 140, 0) -- ярко-оранжевый
+stroke.Color = Color3.fromRGB(255, 140, 0)
 stroke.Thickness = 2
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -20, 0, 30)
+title.Size = UDim2.new(1, -20, 0, 28)
 title.Position = UDim2.new(0, 10, 0, 5)
 title.Text = "🎃 Halloween Autofarm"
 title.TextColor3 = Color3.fromRGB(255, 165, 0)
@@ -55,7 +54,7 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 local separator = Instance.new("Frame", frame)
 separator.Size = UDim2.new(1, -20, 0, 1)
 separator.Position = UDim2.new(0, 10, 0, 35)
-separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180) -- фиолетовый
+separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180)
 separator.BorderSizePixel = 0
 
 -- Helper functions
@@ -79,8 +78,8 @@ local function makeButton(y, text)
 	btn.Size = UDim2.new(0, 160, 0, 25)
 	btn.Position = UDim2.new(0.5, -80, 0, y)
 	btn.Text = text
-	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70) -- фиолетовый темный
-	btn.TextColor3 = Color3.fromRGB(255, 165, 0) -- оранжевый текст
+	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
+	btn.TextColor3 = Color3.fromRGB(255, 165, 0)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 12
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
@@ -94,90 +93,41 @@ local function makeLabel(y, text)
 	lbl.Position = UDim2.new(0.5, -80, 0, y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
-	lbl.TextColor3 = Color3.fromRGB(255, 140, 0) -- ярко-оранжевый
+	lbl.TextColor3 = Color3.fromRGB(255, 140, 0)
 	lbl.Font = Enum.Font.Gotham
 	lbl.TextSize = 12
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	return lbl
 end
 
--- Buttons and labels
+-- Buttons
 local toggleBtn = makeButton(50, "Auto Farm: OFF")
 local antiAfkBtn = makeButton(85, "Anti-AFK: OFF")
 local speedBtn = makeButton(120, "Speed: 15")
-local resetBtn = makeButton(190, "Reset Counter")
-local autoResetBtn = makeButton(225, "Auto Reset: OFF")
+local autoResetBtn = makeButton(155, "Auto Reset: OFF")
 
-local counterLabel = makeLabel(150, "Candies Collected: 0")
-local timerLabel = makeLabel(165, "Time Active: 0s")
-local rateLabel = makeLabel(180, "Est. Candies/Hour: 0")
+-- Labels
+local counterLabel = makeLabel(190, "Candies Collected: 0")
+local timerLabel = makeLabel(205, "Time Active: 0s")
+local rateLabel = makeLabel(220, "Est. Candies/Hour: 0")
 
 -- Button functionality
-resetBtn.MouseButton1Click:Connect(function()
-	collected = 0
-	startTime = tick()
-	counterLabel.Text = "Candies Collected: 0"
-	timerLabel.Text = "Time Active: 0s"
-	rateLabel.Text = "Est. Candies/Hour: 0"
-end)
-
-antiAfkBtn.MouseButton1Click:Connect(function()
-	antiAfkEnabled = not antiAfkEnabled
-	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
-end)
-
-autoResetBtn.MouseButton1Click:Connect(function()
-	autoResetEnabled = not autoResetEnabled
-	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
-end)
-
-speedBtn.MouseButton1Click:Connect(function()
-	flySpeed += 1
-	if flySpeed > 25 then flySpeed = 10 end
-	speedBtn.Text = "Speed: " .. flySpeed
-end)
-
--- Anti-AFK
-player.Idled:Connect(function()
-	if antiAfkEnabled then
-		VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-		task.wait(1)
-		VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-	end
-end)
-
--- Fly function
-local function flyTo(pos, speed)
-	if not rootPart then return end
-	local distance = (pos - rootPart.Position).Magnitude
-	local duration = distance / speed
-	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-	local goal = {CFrame = CFrame.new(pos)}
-	local tween = TweenService:Create(rootPart, tweenInfo, goal)
-	tween:Play()
-	tween.Completed:Wait()
-end
-
--- Auto farm toggle
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
-
 	if isActive then
 		collected = 0
 		startTime = tick()
 		visitedPositions = {}
-
 		task.spawn(function()
 			while isActive do
 				local elapsed = tick() - startTime
-				timerLabel.Text = "Time Active: " .. math.floor(elapsed) .. "s"
-				local rate = elapsed > 0 and math.floor((collected / elapsed) * 3600) or 0
-				rateLabel.Text = "Est. Candies/Hour: " .. rate
+				timerLabel.Text = "Time Active: "..math.floor(elapsed).."s"
+				local rate = elapsed>0 and math.floor((collected/elapsed)*3600) or 0
+				rateLabel.Text = "Est. Candies/Hour: "..rate
 				task.wait(0.1)
 			end
 		end)
-
 		task.spawn(function()
 			while isActive do
 				character = player.Character or player.CharacterAdded:Wait()
@@ -185,41 +135,64 @@ toggleBtn.MouseButton1Click:Connect(function()
 				if rootPart then
 					local closest, shortest = nil, math.huge
 					for _, obj in ipairs(workspace:GetDescendants()) do
-						if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
-							local dist = (obj.Position - rootPart.Position).Magnitude
-							if dist < shortest and dist < 250 and not visitedPositions[obj] then
-								closest = obj
-								shortest = dist
+						if obj:IsA("BasePart") and obj.Name=="Coin_Server" then
+							local dist=(obj.Position-rootPart.Position).Magnitude
+							if dist<shortest and dist<250 and not visitedPositions[obj] then
+								closest=obj
+								shortest=dist
 							end
 						end
 					end
 					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-						flyTo(closest.Position, flySpeed)
+						local distance=(closest.Position-rootPart.Position).Magnitude
+						local duration=distance/flySpeed
+						local tween=TweenService:Create(rootPart,TweenInfo.new(duration,Enum.EasingStyle.Linear),{CFrame=CFrame.new(closest.Position)})
+						tween:Play()
+						tween.Completed:Wait()
 						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
-							visitedPositions[closest] = true
-							collected += 1
-							counterLabel.Text = "Candies Collected: " .. collected
+							visitedPositions[closest]=true
+							collected+=1
+							counterLabel.Text="Candies Collected: "..collected
 						end
 					end
 				end
-
-				-- Auto-reset
 				if autoResetEnabled then
-					local coinsText = player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
+					local coinsText=player:WaitForChild("PlayerGui"):WaitForChild("MainGUI")
 						:WaitForChild("Game"):WaitForChild("CoinBags")
 						:WaitForChild("Container"):WaitForChild("Candy")
-						:WaitForChild("CurrencyFrame"):WaitForChild("Icon")
-						:WaitForChild("Coins").Text
-					local coins = tonumber(coinsText)
-					if coins and coins >= 40 then
-						if player.Character then
-							player.Character:BreakJoints()
-						end
+						:WaitForChild("CurrencyFrame"):WaitForChild("Icon").Text
+					local coins=tonumber(coinsText)
+					if coins and coins>=40 then
+						if player.Character then player.Character:BreakJoints() end
 					end
 				end
-
 				task.wait(0.1)
 			end
 		end)
+	end
+end)
+
+antiAfkBtn.MouseButton1Click:Connect(function()
+	antiAfkEnabled = not antiAfkEnabled
+	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
+end)
+
+speedBtn.MouseButton1Click:Connect(function()
+	flySpeed+=1
+	if flySpeed>25 then flySpeed=10 end
+	speedBtn.Text="Speed: "..flySpeed
+end)
+
+autoResetBtn.MouseButton1Click:Connect(function()
+	autoResetEnabled = not autoResetEnabled
+	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
+end)
+
+-- Anti-AFK
+player.Idled:Connect(function()
+	if antiAfkEnabled then
+		VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+		task.wait(1)
+		VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 	end
 end)
