@@ -29,8 +29,8 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 180, 0, 220)
-frame.Position = UDim2.new(0.5, -90, 0.3, 0)
+frame.Size = UDim2.new(0, 160, 0, 200) -- компактнее
+frame.Position = UDim2.new(0.5, -80, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -42,18 +42,18 @@ stroke.Color = Color3.fromRGB(255, 140, 0)
 stroke.Thickness = 2
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -20, 0, 28)
-title.Position = UDim2.new(0, 10, 0, 5)
+title.Size = UDim2.new(1, -10, 0, 26)
+title.Position = UDim2.new(0, 5, 0, 5)
 title.Text = "🎃 Halloween Autofarm"
 title.TextColor3 = Color3.fromRGB(255, 165, 0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.TextSize = 16
+title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
 
 local separator = Instance.new("Frame", frame)
-separator.Size = UDim2.new(1, -20, 0, 1)
-separator.Position = UDim2.new(0, 10, 0, 35)
+separator.Size = UDim2.new(1, -10, 0, 1)
+separator.Position = UDim2.new(0, 5, 0, 32)
 separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180)
 separator.BorderSizePixel = 0
 
@@ -75,13 +75,13 @@ end
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 160, 0, 25)
-	btn.Position = UDim2.new(0.5, -80, 0, y)
+	btn.Size = UDim2.new(0, 140, 0, 22) -- меньше
+	btn.Position = UDim2.new(0.5, -70, 0, y)
 	btn.Text = text
 	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
 	btn.TextColor3 = Color3.fromRGB(255, 165, 0)
 	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 12
+	btn.TextSize = 11
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 	animateButton(btn)
 	return btn
@@ -89,32 +89,32 @@ end
 
 local function makeLabel(y, text)
 	local lbl = Instance.new("TextLabel", frame)
-	lbl.Size = UDim2.new(0, 160, 0, 18)
-	lbl.Position = UDim2.new(0.5, -80, 0, y)
+	lbl.Size = UDim2.new(0, 140, 0, 16)
+	lbl.Position = UDim2.new(0.5, -70, 0, y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
 	lbl.TextColor3 = Color3.fromRGB(255, 140, 0)
 	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 12
+	lbl.TextSize = 11
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	return lbl
 end
 
 -- Buttons
-local toggleBtn = makeButton(50, "Auto Farm: OFF")
-local antiAfkBtn = makeButton(85, "Anti-AFK: OFF")
-local speedBtn = makeButton(120, "Speed: 15")
-local autoResetBtn = makeButton(155, "Auto Reset: OFF")
+local toggleBtn = makeButton(45, "Auto: OFF")
+local antiAfkBtn = makeButton(75, "AFK: OFF")
+local speedBtn = makeButton(105, "Speed: 15")
+local autoResetBtn = makeButton(135, "AutoReset: OFF")
 
 -- Labels
-local counterLabel = makeLabel(190, "Candies Collected: 0")
-local timerLabel = makeLabel(205, "Time Active: 0s")
-local rateLabel = makeLabel(220, "Est. Candies/Hour: 0")
+local counterLabel = makeLabel(165, "Candies: 0")
+local timerLabel = makeLabel(180, "Time: 0s")
+local rateLabel = makeLabel(195, "Rate: 0/h")
 
 -- Button functionality
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
-	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
+	toggleBtn.Text = isActive and "Auto: ON" or "Auto: OFF"
 	if isActive then
 		collected = 0
 		startTime = tick()
@@ -122,9 +122,9 @@ toggleBtn.MouseButton1Click:Connect(function()
 		task.spawn(function()
 			while isActive do
 				local elapsed = tick() - startTime
-				timerLabel.Text = "Time Active: "..math.floor(elapsed).."s"
+				timerLabel.Text = "Time: "..math.floor(elapsed).."s"
 				local rate = elapsed>0 and math.floor((collected/elapsed)*3600) or 0
-				rateLabel.Text = "Est. Candies/Hour: "..rate
+				rateLabel.Text = "Rate: "..rate.."/h"
 				task.wait(0.1)
 			end
 		end)
@@ -152,7 +152,7 @@ toggleBtn.MouseButton1Click:Connect(function()
 						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
 							visitedPositions[closest]=true
 							collected+=1
-							counterLabel.Text="Candies Collected: "..collected
+							counterLabel.Text="Candies: "..collected
 						end
 					end
 				end
@@ -174,7 +174,7 @@ end)
 
 antiAfkBtn.MouseButton1Click:Connect(function()
 	antiAfkEnabled = not antiAfkEnabled
-	antiAfkBtn.Text = antiAfkEnabled and "Anti-AFK: ON" or "Anti-AFK: OFF"
+	antiAfkBtn.Text = antiAfkEnabled and "AFK: ON" or "AFK: OFF"
 end)
 
 speedBtn.MouseButton1Click:Connect(function()
@@ -185,7 +185,7 @@ end)
 
 autoResetBtn.MouseButton1Click:Connect(function()
 	autoResetEnabled = not autoResetEnabled
-	autoResetBtn.Text = autoResetEnabled and "Auto Reset: ON" or "Auto Reset: OFF"
+	autoResetBtn.Text = autoResetEnabled and "AutoReset: ON" or "AutoReset: OFF"
 end)
 
 -- Anti-AFK
