@@ -25,7 +25,7 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 200, 0, 240) 
+frame.Size = UDim2.new(0, 200, 0, 240)
 frame.Position = UDim2.new(0.5, -96, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
@@ -70,7 +70,7 @@ end
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 160, 0, 24) -- немного увеличена
+	btn.Size = UDim2.new(0, 160, 0, 24)
 	btn.Position = UDim2.new(0.5, -80, 0, y)
 	btn.Text = text
 	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
@@ -97,8 +97,8 @@ end
 
 local toggleBtn = makeButton(45, "Auto: OFF")
 local antiAfkBtn = makeButton(80, "AFK: OFF")
-local autoResetBtn = makeButton(115, "AutoReset: OFF") 
-local speedBtn = makeButton(150, "Speed: 15") 
+local autoResetBtn = makeButton(115, "AutoReset: OFF")
+local speedBtn = makeButton(150, "Speed: 15")
 
 local counterLabel = makeLabel(185, "Candies: 0")
 local timerLabel = makeLabel(200, "Time: 0s")
@@ -182,8 +182,10 @@ end)
 
 player.Idled:Connect(function()
 	if antiAfkEnabled then
-		VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-		task.wait(1)
-		VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+		task.spawn(function()
+			VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+			task.wait(1)
+			VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+		end)
 	end
 end)
