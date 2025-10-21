@@ -29,7 +29,7 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 210, 0, 240) -- увеличено на 1.2 раза
+frame.Size = UDim2.new(0, 200, 0, 240) -- увеличено на 1.2 раза
 frame.Position = UDim2.new(0.5, -96, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
@@ -44,7 +44,7 @@ stroke.Thickness = 2
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, -12, 0, 28)
 title.Position = UDim2.new(0, 6, 0, 5)
-title.Text = "🎃 Halloween Autofarm"
+title.Text = "🎃 Fray.rbx Autofarm"
 title.TextColor3 = Color3.fromRGB(255, 165, 0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
