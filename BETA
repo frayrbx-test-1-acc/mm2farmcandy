@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -10,7 +9,8 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 local visitedPositions = {}
 local isActive = false
 local flySpeed = 15
-local collected = 0
+local collectedSession = 0
+local collectedTotal = 0
 local startTime = 0
 local antiAfkEnabled = false
 local autoResetEnabled = false
@@ -19,7 +19,7 @@ player.CharacterAdded:Connect(function(char)
 	character = char
 	rootPart = char:WaitForChild("HumanoidRootPart")
 	visitedPositions = {}
-	collected = 0
+	collectedSession = 0
 	if player:FindFirstChild("PlayerGui"):FindFirstChild("AutoFarmGui") then
 		player.PlayerGui.AutoFarmGui.Frame.CounterLabel.Text = "Candies Collected: 0"
 	end
@@ -95,7 +95,8 @@ local rateLabel = makeLabel(240, "Est. Candies/Hour: 0")
 local resetBtn = makeButton(265, "Reset Counter")
 
 resetBtn.MouseButton1Click:Connect(function()
-	collected = 0
+	collectedSession = 0
+	collectedTotal = 0
 	startTime = tick()
 	counterLabel.Text = "Candies Collected: 0"
 	timerLabel.Text = "Time Active: 0s"
@@ -126,9 +127,9 @@ end)
 
 player.Idled:Connect(function()
 	if antiAfkEnabled then
-		VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+		VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 		task.wait(1)
-		VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+		VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 	end
 end)
 
@@ -162,10 +163,11 @@ end
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
-	toggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(80, 160, 80) or Color3.fromRGB(50, 50, 70)
+	toggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(80,160,80) or Color3.fromRGB(50,50,70)
 
 	if isActive then
-		collected = 0
+		collectedSession = 0
+		collectedTotal = 0
 		startTime = tick()
 		visitedPositions = {}
 
@@ -173,7 +175,7 @@ toggleBtn.MouseButton1Click:Connect(function()
 			while isActive do
 				local elapsed = tick() - startTime
 				timerLabel.Text = "Time Active: " .. math.floor(elapsed) .. "s"
-				local rate = elapsed > 0 and math.floor((collected / elapsed) * 3600) or 0
+				local rate = elapsed > 0 and math.floor((collectedSession / elapsed) * 3600) or 0
 				rateLabel.Text = "Est. Candies/Hour: " .. rate
 				task.wait(0.1)
 			end
@@ -198,12 +200,14 @@ toggleBtn.MouseButton1Click:Connect(function()
 						flyTo(closest.Position, flySpeed)
 						if closest and closest.Parent and closest:IsDescendantOf(workspace) then
 							visitedPositions[closest] = true
-							collected += 1
-							counterLabel.Text = "Candies Collected: " .. collected
-							if autoResetEnabled and collected >= 40 then
+							collectedSession += 1
+							collectedTotal += 1
+							counterLabel.Text = "Candies Collected: " .. collectedSession
+							if autoResetEnabled and collectedTotal >= 40 then
 								task.wait(1)
 								player.Character:BreakJoints()
-								collected = 0
+								collectedSession = 0
+								collectedTotal = 0
 								counterLabel.Text = "Candies Collected: 0"
 								timerLabel.Text = "Time Active: 0s"
 								rateLabel.Text = "Est. Candies/Hour: 0"
