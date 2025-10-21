@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -156,6 +155,16 @@ local function flyTo(pos, speed)
 	tween.Completed:Wait()
 end
 
+local function countCoins()
+	local n = 0
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
+			n += 1
+		end
+	end
+	return n
+end
+
 toggleBtn.MouseButton1Click:Connect(function()
 	isActive = not isActive
 	toggleBtn.Text = isActive and "Auto Farm: ON" or "Auto Farm: OFF"
@@ -193,28 +202,31 @@ toggleBtn.MouseButton1Click:Connect(function()
 						end
 					end
 					if closest and closest.Parent and closest:IsDescendantOf(workspace) then
+						local before = countCoins()
 						flyTo(closest.Position, flySpeed)
-						local timeout = tick() + 3
-						while closest and closest.Parent and tick() < timeout do
+						local timeout = tick() + 5
+						while tick() < timeout do
+							local now = countCoins()
+							if now < before then
+								collectedSession += 1
+								collectedTotal += 1
+								counterLabel.Text = "Candies Collected: " .. collectedSession
+								visitedPositions[closest] = true
+								break
+							end
 							task.wait(0.05)
 						end
-						if not (closest and closest.Parent) then
-							visitedPositions[closest] = true
-							collectedSession += 1
-							collectedTotal += 1
-							counterLabel.Text = "Candies Collected: " .. collectedSession
-							if autoResetEnabled and collectedTotal >= 40 then
-								task.wait(1)
-								player.Character:BreakJoints()
-								collectedSession = 0
-								collectedTotal = 0
-								counterLabel.Text = "Candies Collected: 0"
-								timerLabel.Text = "Time Active: 0s"
-								rateLabel.Text = "Est. Candies/Hour: 0"
-								startTime = tick()
-								visitedPositions = {}
-								task.wait(5)
-							end
+						if autoResetEnabled and collectedTotal >= 40 then
+							task.wait(1)
+							player.Character:BreakJoints()
+							collectedSession = 0
+							collectedTotal = 0
+							counterLabel.Text = "Candies Collected: 0"
+							timerLabel.Text = "Time Active: 0s"
+							rateLabel.Text = "Est. Candies/Hour: 0"
+							startTime = tick()
+							visitedPositions = {}
+							task.wait(5)
 						end
 					end
 				end
