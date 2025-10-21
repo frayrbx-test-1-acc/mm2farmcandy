@@ -25,9 +25,9 @@ gui.Name = "iOS26AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 420)
-frame.Position = UDim2.new(0.5, -150, 0.25, 0)
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Size = UDim2.new(0, 320, 0, 420)
+frame.Position = UDim2.new(0.5, -160, 0.25, 0)
+frame.BackgroundColor3 = Color3.fromRGB(255,255,255)
 frame.BackgroundTransparency = 0.7
 frame.ClipsDescendants = true
 frame.Active = true
@@ -37,9 +37,9 @@ local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(0, 30)
 
 local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(200, 200, 200)
+stroke.Color = Color3.fromRGB(200,200,200)
+stroke.Thickness = 1.5
 stroke.Transparency = 0.5
-stroke.Thickness = 1.8
 
 local gradient = Instance.new("UIGradient", frame)
 gradient.Color = ColorSequence.new{
@@ -72,8 +72,8 @@ local function makeButton(y, text)
 	btnCorner.CornerRadius = UDim.new(0, 22)
 	local btnStroke = Instance.new("UIStroke", btn)
 	btnStroke.Color = Color3.fromRGB(180,180,180)
-	btnStroke.Transparency = 0.5
 	btnStroke.Thickness = 1.2
+	btnStroke.Transparency = 0.5
 	return btn
 end
 
