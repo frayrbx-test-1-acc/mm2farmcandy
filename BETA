@@ -29,8 +29,8 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 160, 0, 200) -- компактнее
-frame.Position = UDim2.new(0.5, -80, 0.3, 0)
+frame.Size = UDim2.new(0, 192, 0, 240) -- увеличено на 1.2 раза
+frame.Position = UDim2.new(0.5, -96, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -42,18 +42,18 @@ stroke.Color = Color3.fromRGB(255, 140, 0)
 stroke.Thickness = 2
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -10, 0, 26)
-title.Position = UDim2.new(0, 5, 0, 5)
+title.Size = UDim2.new(1, -12, 0, 28)
+title.Position = UDim2.new(0, 6, 0, 5)
 title.Text = "🎃 Halloween Autofarm"
 title.TextColor3 = Color3.fromRGB(255, 165, 0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.TextSize = 14
+title.TextSize = 16
 title.TextXAlignment = Enum.TextXAlignment.Left
 
 local separator = Instance.new("Frame", frame)
-separator.Size = UDim2.new(1, -10, 0, 1)
-separator.Position = UDim2.new(0, 5, 0, 32)
+separator.Size = UDim2.new(1, -12, 0, 1)
+separator.Position = UDim2.new(0, 6, 0, 35)
 separator.BackgroundColor3 = Color3.fromRGB(120, 60, 180)
 separator.BorderSizePixel = 0
 
@@ -75,13 +75,13 @@ end
 
 local function makeButton(y, text)
 	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 140, 0, 22) -- меньше
-	btn.Position = UDim2.new(0.5, -70, 0, y)
+	btn.Size = UDim2.new(0, 160, 0, 24) -- немного увеличена
+	btn.Position = UDim2.new(0.5, -80, 0, y)
 	btn.Text = text
 	btn.BackgroundColor3 = Color3.fromRGB(50, 30, 70)
 	btn.TextColor3 = Color3.fromRGB(255, 165, 0)
 	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 11
+	btn.TextSize = 12
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 	animateButton(btn)
 	return btn
@@ -89,27 +89,27 @@ end
 
 local function makeLabel(y, text)
 	local lbl = Instance.new("TextLabel", frame)
-	lbl.Size = UDim2.new(0, 140, 0, 16)
-	lbl.Position = UDim2.new(0.5, -70, 0, y)
+	lbl.Size = UDim2.new(0, 160, 0, 18)
+	lbl.Position = UDim2.new(0.5, -80, 0, y)
 	lbl.Text = text
 	lbl.BackgroundTransparency = 1
 	lbl.TextColor3 = Color3.fromRGB(255, 140, 0)
 	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 11
+	lbl.TextSize = 12
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	return lbl
 end
 
--- Buttons
+-- Buttons (с новым порядком: Auto Reset выше Speed)
 local toggleBtn = makeButton(45, "Auto: OFF")
-local antiAfkBtn = makeButton(75, "AFK: OFF")
-local speedBtn = makeButton(105, "Speed: 15")
-local autoResetBtn = makeButton(135, "AutoReset: OFF")
+local antiAfkBtn = makeButton(80, "AFK: OFF")
+local autoResetBtn = makeButton(115, "AutoReset: OFF") -- теперь выше
+local speedBtn = makeButton(150, "Speed: 15") -- теперь ниже
 
 -- Labels
-local counterLabel = makeLabel(165, "Candies: 0")
-local timerLabel = makeLabel(180, "Time: 0s")
-local rateLabel = makeLabel(195, "Rate: 0/h")
+local counterLabel = makeLabel(185, "Candies: 0")
+local timerLabel = makeLabel(200, "Time: 0s")
+local rateLabel = makeLabel(215, "Rate: 0/h")
 
 -- Button functionality
 toggleBtn.MouseButton1Click:Connect(function()
