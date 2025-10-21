@@ -24,7 +24,7 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 240, 0, 280)
+frame.Size = UDim2.new(0, 200, 0, 280)
 frame.Position = UDim2.new(0.5, -120, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
