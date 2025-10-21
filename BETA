@@ -29,7 +29,7 @@ gui.Name = "AutoFarmGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 192, 0, 240) -- увеличено на 1.2 раза
+frame.Size = UDim2.new(0, 210, 0, 240) -- увеличено на 1.2 раза
 frame.Position = UDim2.new(0.5, -96, 0.3, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 frame.BorderSizePixel = 0
