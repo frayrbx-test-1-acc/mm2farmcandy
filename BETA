@@ -33,22 +33,24 @@ local visualFrame = Instance.new("Frame", gui)
 visualFrame.Size = UDim2.new(0, 220, 0, 300)
 visualFrame.Position = UDim2.new(0.5, -110, 0.3, 0)
 visualFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-visualFrame.BackgroundTransparency = 0.6
+visualFrame.BackgroundTransparency = 0.35 -- видимый стеклянный фон
 visualFrame.BorderSizePixel = 0
 visualFrame.ClipsDescendants = true
 Instance.new("UICorner", visualFrame).CornerRadius = UDim.new(0,12)
+
 local gradient = Instance.new("UIGradient", visualFrame)
 gradient.Color = ColorSequence.new{
 	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(240,240,255))
 }
 gradient.Rotation = 90
+
 local stroke = Instance.new("UIStroke", visualFrame)
 stroke.Color = Color3.fromRGB(255,162,0)
 stroke.Thickness = 2
-stroke.Transparency = 0.4
+stroke.Transparency = 0.2 -- более видимая обводка
 
--- Интерактивный фрейм для кнопок (прозрачный и кликабельный)
+-- Интерактивный фрейм для кнопок
 local frame = Instance.new("Frame", gui)
 frame.Size = visualFrame.Size
 frame.Position = visualFrame.Position
@@ -117,7 +119,7 @@ local timerLabel = makeLabel(220,"Time Active: 0s","TimerLabel")
 local rateLabel = makeLabel(240,"Est. Candies/Hour: 0","RateLabel")
 local resetBtn = makeButton(265,"Reset Counter")
 
--- Функции кнопок
+-- Кнопки функционал
 resetBtn.MouseButton1Click:Connect(function()
 	collected=0
 	startTime=tick()
